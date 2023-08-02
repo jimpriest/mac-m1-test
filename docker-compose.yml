@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  cfml:
+    container_name: cfml
+    image: ortussolutions/commandbox:adobe2021
+    environment:
+      BOX_SERVER_CFCONFIGFILE: myconfig.json
+      CFPM_INSTALL: mail,chart
+      cfconfig_adminPassword: password
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${PWD}:/app
