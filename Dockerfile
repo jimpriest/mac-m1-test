@@ -12,14 +12,12 @@ FROM ortussolutions/commandbox:adobe2021 as workbench
 ENV APP_DIR /app
 ENV BIN_DIR /usr/local/bin
 ENV BOX_SERVER_PROFILE development
-ENV cfconfig_adminPassword admin
 
 # install required packages with ColdFusion Package Manager (CFPM)
 ENV CFPM_INSTALL adminapi,administrator,mail
 
 # configure server with cfconfig
 COPY myconfig.json ${APP_DIR}
-RUN ${BIN_DIR}/box cfconfig import from=myconfig.json toFormat=adobe@2021
 
 # Generate the startup script only
 ENV FINALIZE_STARTUP true
@@ -56,6 +54,9 @@ COPY --from=workbench ${LIB_DIR} ${LIB_DIR}
 
 # Install TestBox
 # RUN $BIN_DIR/box install testbox
+
+# configure server using cfconfig
+RUN ${BIN_DIR}/box cfconfig import from=${APP_DIR}/myconfig.json toFormat=adobe@2021
 
 
 WORKDIR ${APP_DIR}
