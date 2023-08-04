@@ -5,7 +5,12 @@ FROM ortussolutions/commandbox:adobe2021 as workbench
 
 # set environment for initial commandbox spinup
 ENV APP_DIR /app
-# ENV BOX_SERVER_CFCONFIGFILE ${APP_DIR}/myconfig.json
+
+# configure server with cfconfig
+COPY myconfig.json ${APP_DIR}
+ENV BOX_SERVER_CFCONFIGFILE ${APP_DIR}/myconfig.json
+
+
 ENV BOX_SERVER_PROFILE development
 ENV cfconfig_adminPassword admin
 ENV CFPM_INSTALL adminapi,administrator,mail
@@ -45,10 +50,8 @@ COPY --from=workbench ${BIN_DIR} ${BIN_DIR}
 COPY --from=workbench ${LIB_DIR} ${LIB_DIR}
 
 
-
-
 # Install TestBox
-RUN $BIN_DIR/box install testbox
+# RUN $BIN_DIR/box install testbox
 
 WORKDIR $APP_DIR
 CMD /usr/local/bin/startup-final.sh

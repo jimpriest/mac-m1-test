@@ -5,8 +5,6 @@ services:
     container_name: cfml
     build:
      dockerfile: Dockerfile
-    environment:
-      BOX_SERVER_CFCONFIGFILE: myconfig.json
     image: cfml
     ports:
       - "8080:8080"
