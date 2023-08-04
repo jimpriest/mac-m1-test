@@ -21,7 +21,9 @@ COPY myconfig.json ${APP_DIR}
 
 # Generate the startup script only
 ENV FINALIZE_STARTUP true
-RUN $BUILD_DIR/run.sh
+RUN ${BUILD_DIR}/run.sh
+
+
 
 
 
@@ -34,13 +36,11 @@ FROM adoptopenjdk/openjdk11:debianslim-jre as app
 ENV APP_DIR /app
 
 # Directory Mappings
+# box binary lives in BIN_DIR/box
+# CommandBox folder lives in LIB_DIR/CommandBox
 ENV BIN_DIR /usr/local/bin
 ENV LIB_DIR /usr/local/lib
 ENV BUILD_DIR ${LIB_DIR}/build
-
-# COMMANDBOX_HOME = Where CommmandBox Lives
-# not sure we need this?? jp
-# ENV COMMANDBOX_HOME=$LIB_DIR/CommandBox
 
 # Copy App
 COPY --from=workbench ${APP_DIR} ${APP_DIR}
