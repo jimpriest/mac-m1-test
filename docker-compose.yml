@@ -5,11 +5,9 @@ services:
     container_name: cfml
     build:
      dockerfile: Dockerfile
-    image: cfml
     environment:
       BOX_SERVER_CFCONFIGFILE: myconfig.json
-      CFPM_INSTALL: adminapi,administrator,mail,chart
-      cfconfig_adminPassword: password
+    image: cfml
     ports:
       - "8080:8080"
     volumes:
