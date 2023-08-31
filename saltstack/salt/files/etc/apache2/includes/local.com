@@ -21,38 +21,18 @@ CustomLog /virtual/local.com/logs/apache_access.log "combined"
 ProxyRequests       Off
 ProxyPreserveHost   Off
 
-ProxyPass           /admin http://localhost:8080/htdocs/admin/
-ProxyPassReverse    /admin http://localhost:8080/htdocs/admin/
+<Location /admin>
+    AuthType Basic
+    AuthUserFile /virtual/local.com/www/htdocs/admin/.htpasswd
+    AuthGroupFile /dev/null
+    AuthName "Admin"
+    require valid-user
+
+    ProxyPass           http://localhost:8080/htdocs/admin/
+    ProxyPassReverse    http://localhost:8080/htdocs/admin/
+</Location>
 
 ProxyPass           /CFIDE http://localhost:8080/CFIDE/
 ProxyPassReverse    /CFIDE http://localhost:8080/CFIDE/
 
 
-
-
-# ORIGINAL SETTINGS
-
-# Alias not needed with proxy
-# Alias /admin /virtual/local.com/www/htdocs/admin
-# Alias /CFIDE /usr/local/lib/serverHome/CFIDE
-
-<Location />
-	Options -Indexes
-</Location>
-
-<Location /admin/reports/>
-	Options +Indexes
-</Location>
-
-<Directory /virtual/local.com/www/htdocs>
-    Options +Indexes +FollowSymLinks
-    AllowOverride all
-    Require all granted
-    DirectoryIndex index.cfm
-</Directory>
-
-<Directory /usr/local/lib/serverHome/CFIDE>
-    Options +Indexes +FollowSymLinks
-    AllowOverride all
-    Require all granted
-</Directory>
