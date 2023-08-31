@@ -32,6 +32,3 @@ services:
       - type: bind
         source: ./saltstack/salt/files/etc/apache2/sites-available
         target: /etc/apache2/sites-available
-      - type: bind
-        source: ./saltstack/salt/files/etc/apache2/suexec
-        target: /etc/apache2/suexec

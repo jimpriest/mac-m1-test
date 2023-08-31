@@ -13,8 +13,26 @@ ServerAdmin service@local.com
 ErrorLog /virtual/local.com/logs/apache_error.log
 CustomLog /virtual/local.com/logs/apache_access.log "combined"
 
-Alias /admin /virtual/local.com/www/htdocs/admin
-Alias /CFIDE /usr/local/lib/serverHome/CFIDE
+
+# PROXY SETTINGS
+# If you comment these out - htaccess basic auth will work correctly
+# With proxy enabled however you are not prompted for username/password
+
+ProxyRequests       Off
+ProxyPreserveHost   Off
+
+ProxyPass           /admin http://localhost:8080/htdocs/admin/
+ProxyPassReverse    /admin http://localhost:8080/htdocs/admin/
+
+ProxyPass           /CFIDE http://localhost:8080/CFIDE/
+ProxyPassReverse    /CFIDE http://localhost:8080/CFIDE/
+
+
+
+
+# Alias not needed with proxy
+# Alias /admin /virtual/local.com/www/htdocs/admin
+# Alias /CFIDE /usr/local/lib/serverHome/CFIDE
 
 <Location />
 	Options -Indexes

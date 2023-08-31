@@ -1,5 +1,7 @@
 <h1>Issue</h1>
 <p>I can make this work with either proxy working,  or htaccess working, but not both.</p>
+<p>See saltstack/salt/files/etc/apache2/includes/local.com for Apache configuration.</p>
+<p>Once you uncomment the proxy settings - the htaccess file in website/htdocs/admin/.htaccess no longer works.</p>
 
 <h3>This is running in Docker</h3>
 <p>We've used a 'multi-stage' Docker build to spin up CommandBox with Adobe's JDK running on Debian server</p>

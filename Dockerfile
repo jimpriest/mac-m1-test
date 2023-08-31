@@ -62,7 +62,6 @@ ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
 ENV JAVA_HOME="${JAVA_DIR}"
 ENV JAVA_LIBRARYPATH="${JAVA_DIR}/lib"
 ENV LIB_DIR /usr/local/lib
-ENV PYTHONBUFFERED=1
 ENV TMP_DIR /tmp
 ENV TZ='America/New_York'
 ENV WWW_DIR /virtual/local.com
@@ -106,25 +105,19 @@ RUN set -ex \
 		# temp moved this to bind volume mounts so I can tweak on the fly
     # && mv ${TMP_DIR}/etc/apache2/includes /etc/apache2/includes/ \
     # && mv ${TMP_DIR}/etc/apache2/sites-available/* /etc/apache2/sites-available \
-    # && mv ${TMP_DIR}/etc/apache2/suexec /etc/apache2/suexec \
     && a2enmod rewrite \
 		&& a2enmod proxy \
 		&& a2enmod proxy_http \
     && a2enmod ssl \
     && a2enmod authz_groupfile \
-    && a2enmod suexec \
     && a2ensite 000-default \
     && echo 'ServerName 127.0.0.1' >> /etc/apache2/apache2.conf
 
 # Install TestBox
 # RUN $BIN_DIR/box install testbox
 
-# Configure JAVA (see README.md)
+# Configure JAVA to use Adobe JDK
 RUN ${BIN_DIR}/box server set jvm.javaHome="/opt/jdk-11.0.19"
-	# && ${BIN_DIR}/box server set jvm.args="-Xms256m -Xmx1024m -Djavax.net.ssl.trustStore=/opt/jdk-11.0.19/lib/security/cacerts" \
-	# && ${BIN_DIR}/box server set app.libDirs=${WWW_DIR}/www/lib/javaload,${WWW_DIR}/www/lib \
-	# && sed -i '/security.provider.12=SunPKCS11/a security.provider.13=org.bouncycastle.jce.provider.BouncyCastleProvider' ${JAVA_DIR}/conf/security/java.security \
-	# && mv /tmp/bcprov-jdk15on-153.jar /usr/local/lib/serverHome/WEB-INF/cfusion/runtime/lib/bcprov-jdk15on-153.jar
 
 
 
