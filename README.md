@@ -13,6 +13,10 @@ This is a simplified test to spin up a version of our dev environment using Comm
 - CFPM - new in CF2021 for package management
 - CFConfig for configuring server
 
+#### URLs
+
+- Site: http://local.local/admin/
+
 #### Issue:
 
 I have everything working for the most part but have run into an issue with Apache.

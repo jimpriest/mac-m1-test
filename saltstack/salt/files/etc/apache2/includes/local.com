@@ -30,6 +30,8 @@ ProxyPassReverse    /CFIDE http://localhost:8080/CFIDE/
 
 
 
+# ORIGINAL SETTINGS
+
 # Alias not needed with proxy
 # Alias /admin /virtual/local.com/www/htdocs/admin
 # Alias /CFIDE /usr/local/lib/serverHome/CFIDE
