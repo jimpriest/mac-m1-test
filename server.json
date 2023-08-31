@@ -1,7 +1,0 @@
-{
-    "profile": "development",
-    "web" : {
-        "blockCFAdmin": false,
-        "host":"cfml"
-		}
-}

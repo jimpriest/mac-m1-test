@@ -1,92 +1,134 @@
-FROM ortussolutions/commandbox as workbench
+# ==============================================================================
+# initial build - CommandBox / Adobe CF2021 / Adobe JDK
+# ==============================================================================
+FROM ortussolutions/commandbox as initialbuild
 
-# set environment for initial commandbox spinup
+# Set environment for initial CommandBox spinup
 ENV APP_DIR /app
 ENV BIN_DIR /usr/local/bin
+# https://www.forgebox.io/view/adobe#versions
+ENV BOX_SERVER_APP_CFENGINE adobe@2021.0.10+330161
+# https://commandbox.ortusbooks.com/embedded-server/configuring-your-server/server-profiles
+# development or production
 ENV BOX_SERVER_PROFILE development
 ENV JAVA_DIR /opt/jdk-11.0.19
-ENV BOX_SERVER_APP_CFENGINE adobe@2021.0.9+330148
+ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
+ENV JAVA_HOME="${JAVA_DIR}"
+ENV JAVA_LIBRARYPATH="${JAVA_DIR}/lib"
+ENV LIB_DIR /usr/local/lib
+ENV SALT_DIR saltstack/salt/files
+ENV TMP_DIR /tmp
+ENV WWW_DIR /virtual/local.com
+ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www
 
-ENV PORT 8080
+# This doesn't work... docs say this won't work in non warmed up cf image
+# Install required packages with ColdFusion Package Manager (CFPM)
+# ENV CFPM_INSTALL  adminapi,administrator,ajax,caching,chart,document,feed,image,mail,mysql,spreadsheet,zip
+ENV CFPM_INSTALL  adminapi,administrator,mail
 
 
-# install required packages with ColdFusion Package Manager (CFPM)
-# this seems to throw an error when installing packages - but when the server spins up they are installed?
-#
-# 12 out of 12 packages downloaded.
-# => => # Packages have been downloaded. Now they will get installed.
-# => => # caching package cannot be installed by the server. Please check the server logs and try installing aga
-#
-ENV CFPM_INSTALL adminapi,administrator,ajax,caching,chart,document,feed,image,mail,mysql,spreadsheet,zip
+# Create required directories
+RUN mkdir -p \
+        ${WWW_DIR}/logs \
+        ${WWW_DIR}/www/logs
 
-# configure server with cfconfig
-COPY myconfig.json ${APP_DIR}
+# Copy config files to image tmp directory
+COPY ${SALT_DIR} ${TMP_DIR}
 
-# Install Adobe Java 11
-COPY jdk-11.0.19_linux-x64_bin.tar.gz /tmp
-RUN tar -xzf /tmp/jdk-11.0.19_linux-x64_bin.tar.gz -C /opt
-
-# set java
-RUN ${BIN_DIR}/box server set jvm.javaHome="/opt/jdk-11.0.19" \
-	&& ${BIN_DIR}/box server set jvm.args="-Xms256m -Xmx4024m"
+# Install Adobe Java JDK - Set JAVA_HOME for commandbox startup script
+RUN wget -P ${TMP_DIR} https://cfdownload.adobe.com/pub/adobe/coldfusion/java/java11/java11019/jdk-11.0.19_linux-x64_bin.tar.gz \
+		&& tar -xzf ${TMP_DIR}/jdk-11.0.19_linux-x64_bin.tar.gz -C /opt \
+		&& rm ${TMP_DIR}/jdk-11.0.19_linux-x64_bin.tar.gz \
+		&& ${BIN_DIR}/box server set jvm.java_home="${JAVA_DIR}"
 
 # Generate the startup script only
 ENV FINALIZE_STARTUP true
-RUN ${BUILD_DIR}/run.sh
+RUN ${LIB_DIR}/build/run.sh
 
 
 
+# ===================================================
+# final build - Debian based image for final build
+# ===================================================
+
+FROM debian:bullseye-slim
+
+# Restore environment
+ENV APP_DIR /app
+ENV BIN_DIR /usr/local/bin
+ENV BOX_SERVER_WEB_WEBROOT /virtual/local.com/www
+ENV JAVA_DIR /opt/jdk-11.0.19
+ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
+ENV JAVA_HOME="${JAVA_DIR}"
+ENV JAVA_LIBRARYPATH="${JAVA_DIR}/lib"
+ENV LIB_DIR /usr/local/lib
+ENV PYTHONBUFFERED=1
+ENV TMP_DIR /tmp
+ENV TZ='America/New_York'
+ENV WWW_DIR /virtual/local.com
+
+# Create required support directories
+RUN mkdir -p \
+		/var/cache/local \
+		/var/www/logs \
+		/etc/local
+
+# Copy directories from commandbox image to this image
+COPY --from=initialbuild ${APP_DIR} ${APP_DIR}
+COPY --from=initialbuild ${BIN_DIR} ${BIN_DIR}
+COPY --from=initialbuild ${LIB_DIR} ${LIB_DIR}
+COPY --from=initialbuild ${JAVA_DIR} ${JAVA_DIR}
+COPY --from=initialbuild ${TMP_DIR} ${TMP_DIR}
+COPY --from=initialbuild ${WWW_DIR} ${WWW_DIR}
+
+# Apt update  / install dependencies
+RUN apt-get update \
+    && apt-get install --assume-yes --no-install-recommends --quiet \
+			apache2-suexec-custom \
+			apache2-utils \
+			apache2 \
+			apachetop \
+			apt-transport-https \
+			bzip2 \
+			pip \
+			curl \
+			wget \
+			unzip \
+		&& apt-get autoremove -y \
+		&& apt-get clean \
+		&& rm -rf /var/lib/apt/lists/* \
+    && pip install supervisor \
+		&& apache2ctl stop
+
+# Configure apache
+RUN set -ex \
+    && mkdir -p /etc/apache2/certs \
+		# temp moved this to bind volume mounts so I can tweak on the fly
+    # && mv ${TMP_DIR}/etc/apache2/includes /etc/apache2/includes/ \
+    # && mv ${TMP_DIR}/etc/apache2/sites-available/* /etc/apache2/sites-available \
+    # && mv ${TMP_DIR}/etc/apache2/suexec /etc/apache2/suexec \
+    && a2enmod rewrite \
+		&& a2enmod proxy \
+		&& a2enmod proxy_http \
+    && a2enmod ssl \
+    && a2enmod authz_groupfile \
+    && a2enmod suexec \
+    && a2ensite 000-default \
+    && echo 'ServerName 127.0.0.1' >> /etc/apache2/apache2.conf
+
+# Install TestBox
+# RUN $BIN_DIR/box install testbox
+
+# Configure JAVA (see README.md)
+RUN ${BIN_DIR}/box server set jvm.javaHome="/opt/jdk-11.0.19"
+	# && ${BIN_DIR}/box server set jvm.args="-Xms256m -Xmx1024m -Djavax.net.ssl.trustStore=/opt/jdk-11.0.19/lib/security/cacerts" \
+	# && ${BIN_DIR}/box server set app.libDirs=${WWW_DIR}/www/lib/javaload,${WWW_DIR}/www/lib \
+	# && sed -i '/security.provider.12=SunPKCS11/a security.provider.13=org.bouncycastle.jce.provider.BouncyCastleProvider' ${JAVA_DIR}/conf/security/java.security \
+	# && mv /tmp/bcprov-jdk15on-153.jar /usr/local/lib/serverHome/WEB-INF/cfusion/runtime/lib/bcprov-jdk15on-153.jar
 
 
-# # ===================================================
-# # final build - Debian based image for final build
-# # ===================================================
-# FROM debian:buster-slim
 
-# RUN apt-get update \
-#     && apt-get install --assume-yes --no-install-recommends --quiet \
-# 			unzip \
-# 		&& apt-get autoremove -y \
-# 		&& apt-get clean \
-# 		&& rm -rf /var/lib/apt/lists/*
+COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
-# ENV JAVA_HOME="/opt/jdk-11.0.19"
-# ENV JAVA_EXECUTABLE="/opt/jdk-11.0.19/bin/java"
-# ENV JAVA_LIBRARYPATH="/opt/jdk-11.0.19/lib"
-# ENV TZ='America/New_York'
-# ENV PYTHONBUFFERED=1
-
-
-
-
-# # ===================================================
-# # Restore working directory environment
-
-# RUN mkdir -p /jim
-
-# ENV APP_DIR /jim
-
-# # Directory Mappings
-# # box binary lives in BIN_DIR/box
-# # CommandBox folder lives in LIB_DIR/CommandBox
-# ENV BIN_DIR /usr/local/bin
-# ENV LIB_DIR /usr/local/lib
-# ENV BUILD_DIR ${LIB_DIR}/build
-# ENV JAVA_DIR /opt/jdk-11.0.19
-
-# # Copy App
-# COPY --from=workbench ${APP_DIR} ${APP_DIR}
-# # Copy CommandBox Binaries
-# COPY --from=workbench ${BIN_DIR} ${BIN_DIR}
-# # Copy CommandBox Root + Web Server + Build Scripts
-# COPY --from=workbench ${LIB_DIR} ${LIB_DIR}
-# # Copy JDK
-# COPY --from=workbench ${JAVA_DIR} ${JAVA_DIR}
-
-# # configure server using cfconfig
-# RUN ${BIN_DIR}/box cfconfig import from=${APP_DIR}/myconfig.json toFormat=adobe@2021
-
-
-# WORKDIR ${APP_DIR}
-# CMD ${BIN_DIR}/startup-final.sh
-
+WORKDIR ${APP_DIR}
+ENTRYPOINT ["/docker-entrypoint.sh"]

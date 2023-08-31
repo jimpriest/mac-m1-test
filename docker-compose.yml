@@ -3,13 +3,35 @@ version: '3'
 services:
   cfml:
     container_name: cfml
+    platform: linux/amd64
     build:
      dockerfile: Dockerfile
     image: cfml
     ports:
+      - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - type: bind
-        source: ${PWD}
-        target: /jim
+        source: ./website
+        target: /app
         consistency: consistent
+        # CommandBox expects this /app mapping
+        # We'll duplicate it below to our real webroot
+      - type: bind
+        source: ./website
+        target: /virtual/local.com/www
+        consistency: consistent
+
+      # temporarily mount apache files here instead of copying them
+      # into the image in the dockerfile
+      # so they are easier to edit and modify
+      - type: bind
+        source: ./saltstack/salt/files/etc/apache2/includes
+        target: /etc/apache2/includes
+      - type: bind
+        source: ./saltstack/salt/files/etc/apache2/sites-available
+        target: /etc/apache2/sites-available
+      - type: bind
+        source: ./saltstack/salt/files/etc/apache2/suexec
+        target: /etc/apache2/suexec

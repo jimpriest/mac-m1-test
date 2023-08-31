@@ -1,0 +1,9 @@
+AuthType Basic
+AuthUserFile /virtual/local.com/www/htdocs/admin/.htpasswd
+AuthGroupFile /dev/null
+AuthName "Admin"
+require valid-user
+
+RewriteEngine On
+
+# rewrite rules go here if needed
