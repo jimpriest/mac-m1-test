@@ -3,8 +3,7 @@
 We are migrating from CF2018 to CF2021. During testing it was discovered that our
 previous CF setup which was using the native Adobe zip installer would not work on Mac M1 laptops.
 
-Testing with CommandBox seemed to work so this is a test envirnment to spin up a simplified
-version of our dev envirnment using CommandBox.
+This is a simplified test to spin up a version of our dev environment using CommandBox.
 
 #### This uses:
 
