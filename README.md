@@ -21,6 +21,8 @@ Currently we are using htaccess files throughout the app to provide basic authen
 
 I cannot change that.
 
+See: https://github.com/jimpriest/mac-m1-test/blob/main/saltstack/salt/files/etc/apache2/includes/local.com
+
 When setting up the proxy to CommandBox I cannot figure out how to also get the authentication working.
 
 I've tried various things with no success:
