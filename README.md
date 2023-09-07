@@ -17,19 +17,4 @@ This is a simplified test to spin up a version of our dev environment using Comm
 
 - Site: http://local.local/admin/
 
-#### Issue:
 
-I have everything working for the most part but have run into an issue with Apache.
-
-Currently we are using htaccess files throughout the app to provide basic authentication.
-
-I cannot change that.
-
-See: https://github.com/jimpriest/mac-m1-test/blob/main/saltstack/salt/files/etc/apache2/includes/local.com
-
-When setting up the proxy to CommandBox I cannot figure out how to also get the authentication working.
-
-I've tried various things with no success:
-
-- using ```<proxy> ... </proxy>``` to configure things
-- using a rewrite rule with the [P] proxy flag

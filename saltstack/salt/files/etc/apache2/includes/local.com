@@ -15,11 +15,12 @@ CustomLog /virtual/local.com/logs/apache_access.log "combined"
 
 
 # PROXY SETTINGS
-# If you comment these out - htaccess basic auth will work correctly
-# With proxy enabled however you are not prompted for username/password
 
 ProxyRequests       Off
 ProxyPreserveHost   Off
+
+# This works - you are prompted for basic auth login (via htaccess in /admin)
+# but gives CGI.SCRIPT_NAME = /htdocs/admin
 
 <Location /admin>
     AuthType Basic
@@ -27,10 +28,29 @@ ProxyPreserveHost   Off
     AuthGroupFile /dev/null
     AuthName "Admin"
     require valid-user
-
     ProxyPass           http://localhost:8080/htdocs/admin/
     ProxyPassReverse    http://localhost:8080/htdocs/admin/
 </Location>
+
+
+# Trying various combos of location and proxy urls
+# With the CommandBox alias - I can't get things to work?
+# Apache needs the /admin to hit the proxy
+
+
+# <Location />
+#     AuthType Basic
+#     AuthUserFile /virtual/local.com/www/htdocs/admin/.htpasswd
+#     AuthGroupFile /dev/null
+#     AuthName "Admin"
+#     require valid-user
+#
+#     ProxyPass           http://localhost:8080/
+#     ProxyPassReverse    http://localhost:8080/
+# </Location>
+
+
+
 
 ProxyPass           /CFIDE http://localhost:8080/CFIDE/
 ProxyPassReverse    /CFIDE http://localhost:8080/CFIDE/

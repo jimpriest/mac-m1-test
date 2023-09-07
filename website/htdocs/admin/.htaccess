@@ -6,4 +6,6 @@ require valid-user
 
 RewriteEngine On
 
-# rewrite rules go here if needed
+# -------------------------------------------
+# all our legacy code rewrites are here
+# -------------------------------------------
