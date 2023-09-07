@@ -24,7 +24,8 @@ ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www
 # This doesn't work... docs say this won't work in non warmed up cf image
 # Install required packages with ColdFusion Package Manager (CFPM)
 # ENV CFPM_INSTALL  adminapi,administrator,ajax,caching,chart,document,feed,image,mail,mysql,spreadsheet,zip
-ENV CFPM_INSTALL  adminapi,administrator,mail
+#
+ENV CFPM_INSTALL  adminapi,administrator,debugger
 
 
 # Create required directories
@@ -56,7 +57,7 @@ FROM debian:bullseye-slim
 # Restore environment
 ENV APP_DIR /app
 ENV BIN_DIR /usr/local/bin
-ENV BOX_SERVER_WEB_WEBROOT /virtual/local.com/www
+ENV BOX_SERVER_WEB_WEBROOT /virtual/local.com/www/htdocs
 ENV JAVA_DIR /opt/jdk-11.0.19
 ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
 ENV JAVA_HOME="${JAVA_DIR}"
@@ -83,43 +84,35 @@ COPY --from=initialbuild ${WWW_DIR} ${WWW_DIR}
 # Apt update  / install dependencies
 RUN apt-get update \
     && apt-get install --assume-yes --no-install-recommends --quiet \
-			apache2-suexec-custom \
-			apache2-utils \
-			apache2 \
-			apachetop \
 			apt-transport-https \
 			bzip2 \
-			pip \
 			curl \
 			wget \
+			procps \
 			unzip \
 		&& apt-get autoremove -y \
 		&& apt-get clean \
-		&& rm -rf /var/lib/apt/lists/* \
-    && pip install supervisor \
-		&& apache2ctl stop
+		&& rm -rf /var/lib/apt/lists/*
 
 # Configure apache
-RUN set -ex \
-    && mkdir -p /etc/apache2/certs \
-		# temp moved this to bind volume mounts so I can tweak on the fly
-    # && mv ${TMP_DIR}/etc/apache2/includes /etc/apache2/includes/ \
-    # && mv ${TMP_DIR}/etc/apache2/sites-available/* /etc/apache2/sites-available \
-    && a2enmod rewrite \
-		&& a2enmod proxy \
-		&& a2enmod proxy_http \
-    && a2enmod ssl \
-    && a2enmod authz_groupfile \
-    && a2ensite 000-default \
-    && echo 'ServerName 127.0.0.1' >> /etc/apache2/apache2.conf
+# RUN set -ex \
+#     && mkdir -p /etc/apache2/certs \
+# 		# temp moved this to bind volume mounts so I can tweak on the fly
+#     # && mv ${TMP_DIR}/etc/apache2/includes /etc/apache2/includes/ \
+#     # && mv ${TMP_DIR}/etc/apache2/sites-available/* /etc/apache2/sites-available \
+#     && a2enmod rewrite \
+# 		&& a2enmod proxy \
+# 		&& a2enmod proxy_http \
+#     && a2enmod ssl \
+#     && a2enmod authz_groupfile \
+#     && a2ensite 000-default \
+#     && echo 'ServerName 127.0.0.1' >> /etc/apache2/apache2.conf
 
 # Install TestBox
 # RUN $BIN_DIR/box install testbox
 
 # Configure JAVA to use Adobe JDK
 RUN ${BIN_DIR}/box server set jvm.javaHome="/opt/jdk-11.0.19"
-
-
 
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 

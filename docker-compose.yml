@@ -8,8 +8,8 @@ services:
      dockerfile: Dockerfile
     image: cfml
     ports:
-      - "80:80"
-      - "443:443"
+      # - "80:80"
+      # - "443:443"
       - "8080:8080"
     volumes:
       - type: bind
@@ -26,9 +26,9 @@ services:
       # temporarily mount apache files here instead of copying them
       # into the image in the dockerfile
       # so they are easier to edit and modify
-      - type: bind
-        source: ./saltstack/salt/files/etc/apache2/includes
-        target: /etc/apache2/includes
-      - type: bind
-        source: ./saltstack/salt/files/etc/apache2/sites-available
-        target: /etc/apache2/sites-available
+      # - type: bind
+      #   source: ./saltstack/salt/files/etc/apache2/includes
+      #   target: /etc/apache2/includes
+      # - type: bind
+      #   source: ./saltstack/salt/files/etc/apache2/sites-available
+      #   target: /etc/apache2/sites-available

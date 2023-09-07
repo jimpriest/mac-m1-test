@@ -3,14 +3,14 @@
 set -e
 
 # set paths that need auth
-locations=(
-  '/virtual/local.com/www/htdocs/admin/.htpasswd'
-)
+# locations=(
+#   '/virtual/local.com/www/htdocs/admin/.htpasswd'
+# )
 
-# Create the .htpasswd files
-for location in ${locations[@]}; do
-    htpasswd -cbs "${location}" admin admin
-done
+# # Create the .htpasswd files
+# for location in ${locations[@]}; do
+#     htpasswd -cbs "${location}" admin admin
+# done
 
 
 # Configure server with CFConfig (must have necessary cfpm packages installed before configuring server!)
@@ -19,10 +19,11 @@ ${BIN_DIR}/box cfconfig import from=${APP_DIR}/conf/cfconfig/myconfig.json toFor
 # setup alias in attempt to fix CGI.SCRIPT_NAME
 # Currently:  /htdocs/admin/index.cfm
 # Desired:    /admin/index.cfm
-# ${BIN_DIR}/box server set web.aliases./admin=/virtual/local.com/www/htdocs/admin
+
+${BIN_DIR}/box server set web.aliases./admin=/virtual/local.com/www/htdocs/admin
 
 # Start Apache
-apache2ctl start
+# apache2ctl start
 
 # Run finalized CommandBox startup script
 ${BIN_DIR}/startup-final.sh
