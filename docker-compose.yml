@@ -12,10 +12,10 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - type: bind
-        source: ./website
-        target: /app
-        consistency: consistent
+      # - type: bind
+      #   source: ./website
+      #   target: /app
+      #   consistency: consistent
         # CommandBox expects this /app mapping
         # We'll duplicate it below to our real webroot
       - type: bind

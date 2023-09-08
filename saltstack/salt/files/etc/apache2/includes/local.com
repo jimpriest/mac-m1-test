@@ -19,17 +19,14 @@ CustomLog /virtual/local.com/logs/apache_access.log "combined"
 ProxyRequests       Off
 ProxyPreserveHost   Off
 
-# This works - you are prompted for basic auth login (via htaccess in /admin)
-# but gives CGI.SCRIPT_NAME = /htdocs/admin
-
 <Location /admin>
     AuthType Basic
     AuthUserFile /virtual/local.com/www/htdocs/admin/.htpasswd
     AuthGroupFile /dev/null
     AuthName "Admin"
     require valid-user
-    ProxyPass           http://localhost:8080/htdocs/admin/
-    ProxyPassReverse    http://localhost:8080/htdocs/admin/
+    ProxyPass           http://localhost:8080/admin/
+    ProxyPassReverse    http://localhost:8080/admin/
 </Location>
 
 

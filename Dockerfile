@@ -4,7 +4,9 @@
 FROM ortussolutions/commandbox as initialbuild
 
 # Set environment for initial CommandBox spinup
-ENV APP_DIR /app
+ENV WWW_DIR /virtual/local.com
+
+ENV APP_DIR ${WWW_DIR}/www/htdocs
 ENV BIN_DIR /usr/local/bin
 # https://www.forgebox.io/view/adobe#versions
 ENV BOX_SERVER_APP_CFENGINE adobe@2021.0.10+330161
@@ -18,8 +20,10 @@ ENV JAVA_LIBRARYPATH="${JAVA_DIR}/lib"
 ENV LIB_DIR /usr/local/lib
 ENV SALT_DIR saltstack/salt/files
 ENV TMP_DIR /tmp
-ENV WWW_DIR /virtual/local.com
-ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www
+ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www/htdocs
+
+# Set ColdFusion administrator password
+ENV cfconfig_adminPassword=admin
 
 # This doesn't work... docs say this won't work in non warmed up cf image
 # Install required packages with ColdFusion Package Manager (CFPM)
@@ -30,7 +34,8 @@ ENV CFPM_INSTALL  adminapi,administrator,mail
 # Create required directories
 RUN mkdir -p \
         ${WWW_DIR}/logs \
-        ${WWW_DIR}/www/logs
+        ${WWW_DIR}/www/logs \
+				${WWW_DIR}/www/htdocs
 
 # Copy config files to image tmp directory
 COPY ${SALT_DIR} ${TMP_DIR}
@@ -54,9 +59,11 @@ RUN ${LIB_DIR}/build/run.sh
 FROM debian:bullseye-slim
 
 # Restore environment
-ENV APP_DIR /app
+ENV WWW_DIR /virtual/local.com
+
+ENV APP_DIR ${WWW_DIR}/www/htdocs
 ENV BIN_DIR /usr/local/bin
-ENV BOX_SERVER_WEB_WEBROOT /virtual/local.com/www
+ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www/htdocs
 ENV JAVA_DIR /opt/jdk-11.0.19
 ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
 ENV JAVA_HOME="${JAVA_DIR}"
@@ -64,7 +71,6 @@ ENV JAVA_LIBRARYPATH="${JAVA_DIR}/lib"
 ENV LIB_DIR /usr/local/lib
 ENV TMP_DIR /tmp
 ENV TZ='America/New_York'
-ENV WWW_DIR /virtual/local.com
 
 # Create required support directories
 RUN mkdir -p \
