@@ -4,7 +4,7 @@
 FROM ortussolutions/commandbox as initialbuild
 
 # Set environment for initial CommandBox spinup
-ENV APP_DIR /app
+ENV APP_DIR /virtual/local.com/www/htdocs
 ENV BIN_DIR /usr/local/bin
 # https://www.forgebox.io/view/adobe#versions
 ENV BOX_SERVER_APP_CFENGINE adobe@2021.0.10+330161
@@ -19,7 +19,7 @@ ENV LIB_DIR /usr/local/lib
 ENV SALT_DIR saltstack/salt/files
 ENV TMP_DIR /tmp
 ENV WWW_DIR /virtual/local.com
-ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www
+ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www/htdocs
 
 # This doesn't work... docs say this won't work in non warmed up cf image
 # Install required packages with ColdFusion Package Manager (CFPM)
@@ -31,7 +31,8 @@ ENV CFPM_INSTALL  adminapi,administrator,debugger
 # Create required directories
 RUN mkdir -p \
         ${WWW_DIR}/logs \
-        ${WWW_DIR}/www/logs
+        ${WWW_DIR}/www/logs \
+				${WWW_DIR}/www/htdocs
 
 # Copy config files to image tmp directory
 COPY ${SALT_DIR} ${TMP_DIR}
@@ -55,9 +56,8 @@ RUN ${LIB_DIR}/build/run.sh
 FROM debian:bullseye-slim
 
 # Restore environment
-ENV APP_DIR /app
+ENV APP_DIR /virtual/local.com/www/htdocs
 ENV BIN_DIR /usr/local/bin
-ENV BOX_SERVER_WEB_WEBROOT /virtual/local.com/www/htdocs
 ENV JAVA_DIR /opt/jdk-11.0.19
 ENV JAVA_EXECUTABLE="${JAVA_DIR}/bin/java"
 ENV JAVA_HOME="${JAVA_DIR}"
@@ -66,12 +66,14 @@ ENV LIB_DIR /usr/local/lib
 ENV TMP_DIR /tmp
 ENV TZ='America/New_York'
 ENV WWW_DIR /virtual/local.com
+ENV BOX_SERVER_WEB_WEBROOT ${WWW_DIR}/www/htdocs
 
 # Create required support directories
 RUN mkdir -p \
 		/var/cache/local \
 		/var/www/logs \
 		/etc/local
+
 
 # Copy directories from commandbox image to this image
 COPY --from=initialbuild ${APP_DIR} ${APP_DIR}
